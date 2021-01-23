@@ -20,7 +20,7 @@ const extensions = {
 		}
 		else {
 			if (creepConfig.source && creepConfig.source(this))
-				stateChange = false;
+				stateChange = true;
 		}
 		if (stateChange) this.memory.working = !this.memory.working;
 	},
@@ -46,7 +46,9 @@ const extensions = {
 
 	//升级操作
 	upgrade: () => {
-		if (this.upgradeController(this.room.controller) == ERR_NOT_IN_RANGE) this.moveTo(this.room.controller);
+		const result = this.upgradeController(this.room.controller);
+		if (result == ERR_NOT_IN_RANGE) this.moveTo(this.room.controller);
+		return result;
 	},
 
 	//填充操作

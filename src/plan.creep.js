@@ -17,8 +17,7 @@ const releasePlans = {
 					console.log(`${room} no sources found!`);
 					return;
 				}
-				room.memory.sources = [];
-				for (let source of sources) {
+				room.memory.sources = []; for (let source of sources) {
 					room.memory.sources.push({source: source.id, nearLink: undefined});
 				}
 			}
@@ -56,6 +55,45 @@ const releasePlans = {
 				})
 			}
 		]
+	},
+
+	upgrader: {
+		getStats: room => {
+
+		},
+
+		plans: [
+
+		]
+	},
+
+	transporter: {
+		getStats: room => {
+			let stats = {};
+			stats.room = room;
+			stats.containers = room.memory.containers;
+			if (room.storage) stat.storageId = room.storage.id;
+			if (room.memory.centerLinkId) stats.centerLinkId = room.memory.centerLinkId;
+			return stats;
+		},
+
+		plans: [
+			(room, containers) => {
+				containers.forEach((container, index) => {
+					creepApi.add(`${room.name} filler${index}`, {
+						role: 'filler',
+						sourceId: container
+					});
+				});
+				console.log('发布filler');
+				return false;
+			},
+
+			//暂时用着
+			(room, storageId) => {
+				if (!storageId) return true;
+			}
+		]
 	}
 }
 
@@ -74,13 +112,40 @@ const releaseHarvester = function (room) {
 	return OK;
 }
 
-const roleToRelease = {
-	'harvester': releaseHarvester,
+const releaseTransporter = function (room) {
+	planChains.transporter(releasePlans.transporter.getStats(room));
+	return OK;
 }
 
-export const releaseCreep = function (room, role) {
+const roleToRelease = {
+	'harvester': releaseHarvester,
+
+	'builder': function (room) {
+		creepApi.add(`${room.name} builder${Game.time}`, {
+			role: 'builder',
+			room: room.name
+		});
+	},
+
+	'filler': releaseTransporter,
+
+	'upgrader': function (room) {
+		//暂时先用着
+		const containers = room.memory.containers;
+		if (!containers) console.log('release upgrader error, no containers');
+		containers.forEach((container, index) => {
+			creepApi.add(`${room.name} upgrader${index}`, {
+				role: 'upgrader',
+				sourceId: container
+			});
+		});
+	},
+}
+
+module.exports.releaseCreep = function (room, role) {
 	return roleToRelease[role](room);
 }
+
 
 
 

@@ -25,7 +25,7 @@ const extensions = {
 		Memory.stats.rooms[this.room.name].controllerRatio = (this.progress / this.progressTotal) * 100;
 		if (Memory.stats.rooms[this.room.name].controllerLevel != this.level)
 			hasLevelChange = true;
-		Memory.stats.room[this.room.name].controllerLevel = this.level;
+		Memory.stats.rooms[this.room.name].controllerLevel = this.level;
 		return hasLevelChange;
 	}
 }

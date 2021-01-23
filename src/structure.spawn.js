@@ -1,4 +1,3 @@
-const creepController = require('./controller.creep')
 const configs = require('./setting')
 module.exports = function () {
 	_.assign(StructureSpawn, extensions);
@@ -8,8 +7,7 @@ const extensions = {
 	work: () => {
 		if (this.spawning) {
 			if (this.spawning.needTime - this.spawning.remainingTime == 1) {
-				this.room.addRoomTransferTask();
-				creepController.checkFillers();
+				this.room.addTransferTask();
 			}
 		}
 		if (!this.room.memory.spawnList) this.room.memory.spawnList = [];

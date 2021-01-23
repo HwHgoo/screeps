@@ -26,7 +26,7 @@ module.exports = () => ({
 			}
 			//没有container就建一个
 			let site = null;
-			if (!creep.memory.targetId) creep.pos.createConstructionSite(STRUCTURE_CONTAINER);
+			if (!creep.memory.targetId) creep.pos.setConstructionSite(STRUCTURE_CONTAINER);
 			else site = Game.getObjectById(creep.memory.targetId);
 			//缓存工地
 			if (!site) site = creep.pos.lookfor(LOOK_CONSTRUCTION_SITES).find(s => s.structureType == STRUCTURE_CONTAINER);
@@ -34,6 +34,8 @@ module.exports = () => ({
 			if (!site) {
 				const container = creep.pos.lookfor(LOOK_STRUCTURES).find(s => s.structureType == STRUCTURE_CONTAINER);
 				if (container) {
+					if (!creep.room.memory.containers) creep.room.memory.containers = [];
+					creep.room.memory.containers.push(container.id);
 					creep.memory.targetId = container.id;
 					creep.room.releaseCreep('filler');
 					creep.room.releaseCreep('upgrader');
@@ -42,12 +44,13 @@ module.exports = () => ({
 				return false;
 			}
 			else creep.memory.targetId = site.id;
-			creep.build(site);
+			creep.buildStructure(site.id);
 		},
 
 		//采集阶段就无脑采集就行
 		target: creep => {
 			const source = Game.getObjectById(creep.memory.sourceId);
+			creep.getEnergyFrom(source);
 			if (creep.ticksToLive < 2) creep.drop(RESOURCE_ENERGY);
 			return false;
 		}
@@ -110,6 +113,20 @@ module.exports = () => ({
 		target: creep => {
 			creep.fill(targetId);
 			if (creep.store[RESOURCE_ENERGY] <= 0) return true;
+		}
+	},
+
+	upgrader: {
+		source: creep => {
+			if (creep.store[RESOURCE_ENERGY] > 0) return true;
+			const source = Game.getObjectById(creep.memory.sourceId);
+			if (source && source.structureType == STRUCTURE_EXTENSION && source.store[RESOURCE_ENERGY] <= 500) return false;
+			const result = creep.getEnergyFrom(source);
+			console.log(`${creep.name} getting energy from ${source}, code : ${result}`);
+		},
+
+		target: creep => {
+			if (creep.upgrade() == ERR_NOT_ENOUGH_RESOURCES) return true;
 		}
 	}
 })

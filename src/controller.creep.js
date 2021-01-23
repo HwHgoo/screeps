@@ -23,7 +23,7 @@ module.exports = () => ({
 			Memory.creepConfigs[creepName] = creepData;
 			const room = Game.rooms[creepData.room];
 			if (!room) return ERR_NOT_OWNER;
-			room.add(creepName);
+			room.addSpawnTask(creepName);
 			return OK;
 		}
 	}
